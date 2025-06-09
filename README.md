@@ -2,7 +2,7 @@
 This is the repository where all the smart contracts reside for project Luxechain.
 
 #CARDANO SMART CONTRACT
-NFTMarketEscrowFinal:- Cardano Escrow Smart Contract for on-chain NFT transfer from seller's wallet to buyer's wallet.
+#NFTMarketEscrowFinal:- Cardano Escrow Smart Contract for on-chain NFT transfer from seller's wallet to buyer's wallet.
 #Overview:
 The Escrow smart contract provides an automated, trustless mechanism for securely transferring NFTs and funds during a watch sale.
 #Flow:
@@ -25,7 +25,7 @@ OffchainLucidCode folder contains Javascript codes to make operations on cardano
 Test folder contains proper unit test files and quick-check files.
 
 #MIDNIGHT SMART CONTRACT
-MidnightNFTVerificationCompactSmartContract:- Midnight Smart Contract that stores the hashedUsername - NFT ID in map registry for verification purpose.
+#MidnightNFTVerificationCompactSmartContract:- Midnight Smart Contract that stores the hashedUsername - NFT ID in map registry for verification purpose.
 #Overview:-
 Midnight is a privacy-focused blockchain that leverages zero-knowledge (ZK) technology to enable data protection while maintaining the blockchain's transparency benefits. At its core, Midnight uses ZK SNARK (Zero-Knowledge Succinct Non-Interactive Arguments of Knowledge), which allows one party to prove a statement's validity without revealing any additional information beyond the claim itself.
 #Flow:
