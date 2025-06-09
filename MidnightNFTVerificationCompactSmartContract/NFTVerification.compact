@@ -1,0 +1,81 @@
+// NFTVerification.compact
+pragma language_version 0.15;
+
+import CompactStandardLibrary;
+
+// Public state visible on-chain
+export ledger nftRegistry: Map<Bytes<32>, Bytes<32>>; // Maps NFT IDs to hashed usernames
+export ledger round: Counter; // For anonymity
+
+// Private witness functions
+witness getSellerUsername(): Opaque<"string">;
+witness getNftID(): Bytes<32>;
+
+// Circuit to lock NFT and register seller
+export circuit lockNFT(): Bytes<32> {
+  // Get the seller's username and NFT ID from private inputs
+  const username = getSellerUsername();
+  const nftID = getNftID();
+
+  assert !nftRegistry.member(nftID) "NFT is already registered in the system";
+
+  round.increment(1);
+  
+  // First create a hash of the username directly
+  // We can disclose the username since we're only storing its hash
+  const usernameHash = transient_hash<Opaque<"string">>(disclose(username));
+
+  const domainHash = transient_hash<Bytes<32>>(pad(32, "midnight:nft:username"));
+  
+  // Then create the final hash with domain separator and round
+  const hashedUsername = persistent_hash<Vector<3, Field>>([
+    domainHash,  
+    usernameHash,
+    round as Field
+  ]);
+  
+  // Register the NFT with the hashed username in the public registry
+  nftRegistry.insert(disclose(nftID), hashedUsername);
+  
+  // Return the hashed username to display in UI
+  return hashedUsername;
+}
+
+// Circuit for buyers to verify NFT ownership
+export circuit verifyNFTOwnership(
+  nftID: Bytes<32>, 
+  hashedUsername: Bytes<32>
+): Boolean {
+  // Check if the NFT exists in the registry
+  assert nftRegistry.member(nftID) "NFT not registered in the system";
+  
+  // Get the stored hashed username for this NFT
+  const storedHashedUsername = nftRegistry.lookup(nftID);
+  
+  // Compare the provided hashed username with the stored one
+  const isVerified = (storedHashedUsername == hashedUsername);
+  
+  // Return verification result
+  return isVerified;
+}
+
+// Add a new circuit to remove NFT from registry after purchase
+export circuit unlockNFT(
+  nftID: Bytes<32>,
+  hashedUsername: Bytes<32>
+): Boolean {
+  // First verify ownership to ensure only the rightful owner can complete the purchase
+  assert nftRegistry.member(nftID) "NFT not registered in the system";
+  
+  // Get the stored hashed username for this NFT
+  const storedHashedUsername = nftRegistry.lookup(nftID);
+  
+  // Verify the provided hashed username matches the stored one
+  assert storedHashedUsername == hashedUsername "Not authorized to unlock the NFT";
+  
+  // Remove the NFT from the registry
+  nftRegistry.remove(nftID);
+  
+  // Return success
+  return true;
+}
